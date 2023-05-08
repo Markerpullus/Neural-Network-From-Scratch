@@ -38,7 +38,7 @@ class Train:
 
     # matrify this
     def get_cost(self, inputs: np.ndarray, labels: np.ndarray):
-        result = self.network.feed(inputs, 0)
+        result = self.network.feed(inputs)
         target = np.zeros((labels.size, 10))
         target[np.arange(labels.size), labels] = 1
         cost = np.square(result - target.transpose())
@@ -46,13 +46,13 @@ class Train:
         return np.sum(cost, axis=0)
     
     def get_cost_prime(self, inputs: np.ndarray, labels: np.ndarray):
-        result = self.network.feed(inputs, 0)
+        result = self.network.feed(inputs)
         target = np.zeros((labels.size, 10))
         target[np.arange(labels.size), labels] = 1
 
         return result - target.transpose()
     
-    def train(self, f_train_data: str):
+    def train(self, f_train_data: str, epoch: int):
         train_data = np.array(pd.read_csv(f_train_data))
 
         '''# calculate cost
@@ -61,22 +61,38 @@ class Train:
         #print(f"weighted sums: {self.network.weighted_sums}")
         print(f"neurons: {self.network.neurons[3]}")'''
 
-        train_inputs = train_data[500:10000, 1:].transpose() # first 50 samples
+        train_inputs = train_data[500:60001, 1:].transpose() # first 50 samples
         train_inputs = np.vectorize(map)(train_inputs) # map 0-255 to 0-1
-        train_labels = train_data[500:10000, 0].transpose()
+        train_labels = train_data[500:60001, 0].transpose()
 
         test_inputs = train_data[:500, 1:].transpose()
         test_inputs = np.vectorize(map)(test_inputs)
         test_labels = train_data[:500, 0].transpose()
 
-        # gradient descent
-        for i in range(500):
+        # gradient descent (epoch)
+        '''for i in range(epoch):
             print(f"epoch: {i}")
             grad_w, grad_b = self.train_batch(train_inputs, train_labels)
             for j in range(self.network.layers - 1):
                 self.network.weights[j] -= Settings.alpha * grad_w[j]
                 self.network.biases[j] -= Settings.alpha * grad_b[j]
             
+            if i % 5 == 0:
+                cost = self.get_cost(test_inputs, test_labels)
+                print(f"average cost: {cost.mean()}")'''
+        
+        # batch descent
+        train_inputs = np.array_split(train_inputs, Settings.batches, axis=1) #split into batches
+        train_labels = np.array_split(train_labels, Settings.batches)
+        
+        for i in range(epoch):
+            print(f"epoch: {i}")
+            for j in range(Settings.batches):
+                grad_w, grad_b = self.train_batch(train_inputs[j], train_labels[j])
+                for k in range(self.network.layers - 1):
+                    self.network.weights[k] -= Settings.alpha * grad_w[k]
+                    self.network.biases[k] -= Settings.alpha * grad_b[k]
+                
             if i % 5 == 0:
                 cost = self.get_cost(test_inputs, test_labels)
                 print(f"average cost: {cost.mean()}")
@@ -119,47 +135,9 @@ class Train:
         elif self.network.activation == "relu":
             dz_next *= np.vectorize(dReLU)(z)
         elif self.network.activation == "arctan":
-            dz_next *= np.vectorize(darctan)(z)
+            dz_next *= np.vectorize(dtanh)(z)
         
         self.back_propagate(layer - 1, dz_next, grad_w, grad_b)
-
-
-        '''if dcda.shape != self.network.neurons[layer].shape:
-            print(f"Incorrect layer shape of {dcda.shape}")
-            return
-        
-        if layer == self.network.layers - 1:
-            dadz = 1 # if last layer, then dont apply derivative of activation function
-        if (self.network.activation == "sigmoid"):
-            dadz = np.vectorize(dsigmoid)(self.network.weighted_sums[layer-1])
-        elif (self.network.activation == "arctan"):
-            dadz = np.vectorize(darctan)(self.network.weighted_sums[layer-1])
-        elif (self.network.activation == "relu"):
-            dadz = np.vectorize(dReLU)(self.network.weighted_sums[layer-1])
-        
-        delta = dcda * dadz
-
-        # change in weights
-        dzdw = self.network.neurons[layer-1]
-        dcdw = np.outer(delta, dzdw)
-        self.grad_weights.insert(0, dcdw)
-        print(f"dcdw: {dcdw}")
-
-        # change in biases
-        dzdb = 1
-        dcdb = dzdb * delta
-        self.grad_biases.insert(0, dcdb)
-
-        # change to prev layer
-        dzda = self.network.weights[layer-1].transpose()
-        dcda_next = np.dot(dzda, delta)
-
-        if (layer == 1):
-            return
-        
-        print()
-
-        self.back_propagate(layer - 1, dcda_next)'''
 
 def map(num):
     return num / 255

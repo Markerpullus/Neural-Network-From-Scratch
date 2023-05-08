@@ -69,11 +69,11 @@ class Network:
         file.close()
     
     # recursive feed
-    def feed(self, input: np.ndarray, layer: int) -> np.ndarray:
+    def feed(self, input: np.ndarray) -> np.ndarray:
         self.weighted_sums = []
         self.neurons = []
 
-        return self.forward_propagate(input, layer)
+        return self.forward_propagate(input, 0)
     
     def forward_propagate(self, input: np.ndarray, layer: int) -> np.ndarray:
         self.neurons.append(input)
@@ -91,8 +91,8 @@ class Network:
             next_layer = np.vectorize(ReLU)(weighted_sums)
         elif self.activation == "sigmoid":
             next_layer = np.vectorize(sigmoid)(weighted_sums)
-        elif self.activation == "arctan":
-            next_layer = np.vectorize(arctan)(weighted_sums)
+        elif self.activation == "tanh":
+            next_layer = np.vectorize(tanh)(weighted_sums)
 
         '''print(f"layer: {layer}")
         print(f"weighted_sums: {weighted_sums}")
@@ -119,8 +119,8 @@ def dsigmoid(x):
 def softmax(x):
     return np.exp(x) / np.sum(np.exp(x), axis=0)
 
-def arctan(x):
-    return np.arctan(x)
+def tanh(x):
+    return np.tanh(x)
 
-def darctan(x):
-    return 1 / (1 + x*x)
+def dtanh(x):
+    return 1 - tanh(x)**2
