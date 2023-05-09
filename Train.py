@@ -138,7 +138,7 @@ class Train:
             dz_next *= np.vectorize(dsigmoid)(z)
         elif self.network.activation == "relu":
             dz_next *= np.vectorize(dReLU)(z)
-        elif self.network.activation == "arctan":
+        elif self.network.activation == "tanh":
             dz_next *= np.vectorize(dtanh)(z)
         
         self.back_propagate(layer - 1, dz_next, grad_w, grad_b)
