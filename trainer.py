@@ -9,15 +9,15 @@ def map_data(num):
     return num / 255
 
 if __name__ == "__main__":
-    trainer = Train()
+    '''trainer = Train()
     trainer.train("mnist_train.csv", 100)
-    trainer.save()
+    trainer.save()'''
 
-    '''net = Network("weights.txt")
+    net = Network("weights.txt")
     train_data = np.array(pd.read_csv("mnist_test.csv"))
-    test_input = train_data[5:6, 1:].transpose()
+    test_input = train_data[:1, 1:].transpose()
     test_input = np.vectorize(map_data)(test_input)
-    test_label = train_data[5:6, 0].transpose()
+    test_label = train_data[:1, 0].transpose()
 
     plt.gray()
     plt.imshow(test_input.reshape(28, 28), interpolation="nearest")
@@ -30,4 +30,4 @@ if __name__ == "__main__":
 
     print(f"label: {test_label}")
     print(f"result: {result}")
-    print(f"accuracy: {accuracy}")'''
+    print(f"accuracy: {accuracy}")

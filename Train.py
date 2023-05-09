@@ -6,7 +6,6 @@ import numpy as np
 class Train:
     def __init__(self):
         self.network = Network(self.randomize_weights(), self.randomize_biases())
-        
 
         '''i = 0
         for row in train_data:
@@ -69,7 +68,7 @@ class Train:
         test_inputs = np.vectorize(map)(test_inputs)
         test_labels = train_data[:500, 0].transpose()
 
-        # gradient descent (epoch)
+        # gradient descent (original)
         '''for i in range(epoch):
             print(f"epoch: {i}")
             grad_w, grad_b = self.train_batch(train_inputs, train_labels)
@@ -81,18 +80,23 @@ class Train:
                 cost = self.get_cost(test_inputs, test_labels)
                 print(f"average cost: {cost.mean()}")'''
         
-        # batch descent
+        # batch gradient descent
         train_inputs = np.array_split(train_inputs, Settings.batches, axis=1) #split into batches
         train_labels = np.array_split(train_labels, Settings.batches)
         
         for i in range(epoch):
             print(f"epoch: {i}")
+
+            # get decayed alpha value
+            alpha = 1 / (1 + Settings.decay * i) * Settings.alpha
+            #print(f"alpha: {alpha}")
+
             for j in range(Settings.batches):
                 grad_w, grad_b = self.train_batch(train_inputs[j], train_labels[j])
                 for k in range(self.network.layers - 1):
-                    self.network.weights[k] -= Settings.alpha * grad_w[k]
-                    self.network.biases[k] -= Settings.alpha * grad_b[k]
-                
+                    self.network.weights[k] -= alpha * grad_w[k]
+                    self.network.biases[k] -= alpha * grad_b[k]
+
             if i % 5 == 0:
                 cost = self.get_cost(test_inputs, test_labels)
                 print(f"average cost: {cost.mean()}")

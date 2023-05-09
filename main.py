@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from skimage.transform import rescale
 
 def drawCircle( screen, x, y ):
-    pygame.draw.circle( screen, (255, 255, 255), ( x, y ), 10 )
+    pygame.draw.circle( screen, (255, 255, 255), ( x, y ), 9)
 
 pygame.init()
 screen = pygame.display.set_mode((280, 280))
@@ -31,7 +31,11 @@ def submit():
     # rescale, resize, refactor
     pixels = pixels.transpose()
     pixels = np.vectorize(pix_filter)(pixels)
-    pixels = rescale(pixels.astype(np.float64), 0.1, anti_aliasing=False)
+    pixels = rescale(pixels.astype(np.float64), 0.1, anti_aliasing=True)
+
+    plt.gray()
+    plt.imshow(pixels, interpolation="nearest")
+    plt.show()
 
     # feed to network
     result = net.feed(pixels.flatten()[:, np.newaxis])
@@ -50,7 +54,7 @@ while True:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             isPressed = True
             mouse = pygame.mouse.get_pos()
-            if mouse[0] >= 255 and mouse[1] >= 267:
+            if mouse[0] >= 240 and mouse[1] >= 260:
                 submit()
         elif event.type == pygame.MOUSEBUTTONUP:
             isPressed = False
