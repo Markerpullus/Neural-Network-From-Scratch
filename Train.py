@@ -4,15 +4,11 @@ import pandas as pd
 import numpy as np
 
 class Train:
-    def __init__(self):
-        self.network = Network(self.randomize_weights(), self.randomize_biases())
-
-        '''i = 0
-        for row in train_data:
-            print(", ".join(row))
-            i += 1
-            if i > 5:
-                break'''
+    def __init__(self, *args):
+        if len(args) == 1:
+            self.network = Network(args[0]) # load from file
+        else:
+            self.network = Network(self.randomize_weights(), self.randomize_biases())
     
     def randomize_weights(self):
         weights = []
@@ -32,8 +28,8 @@ class Train:
         
         return biases
     
-    def save(self):
-        self.network.save("weights.txt")
+    def save(self, out_file: str):
+        self.network.save(out_file)
 
     # matrify this
     def get_cost(self, inputs: np.ndarray, labels: np.ndarray):
@@ -87,6 +83,10 @@ class Train:
         for i in range(epoch):
             print(f"epoch: {i}")
 
+            if i % 5 == 0:
+                cost = self.get_cost(test_inputs, test_labels)
+                print(f"average cost: {cost.mean()}")
+
             # get decayed alpha value
             alpha = 1 / (1 + Settings.decay * i) * Settings.alpha
             #print(f"alpha: {alpha}")
@@ -96,10 +96,6 @@ class Train:
                 for k in range(self.network.layers - 1):
                     self.network.weights[k] -= alpha * grad_w[k]
                     self.network.biases[k] -= alpha * grad_b[k]
-
-            if i % 5 == 0:
-                cost = self.get_cost(test_inputs, test_labels)
-                print(f"average cost: {cost.mean()}")
             
 
     def train_batch(self, inputs: np.ndarray, labels: np.ndarray): # input, label
